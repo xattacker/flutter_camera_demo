@@ -40,6 +40,10 @@ class _CameraScreenState extends State<CameraScreen>
   double _currentExposureOffset = 0.0;
   FlashMode? _currentFlashMode;
 
+  // temp scale for Gesture Pinch
+  double _tempZoom = 1.0;
+
+
   List<File> allFileList = [];
 
   final resolutionPresets = ResolutionPreset.values;
@@ -228,7 +232,7 @@ class _CameraScreenState extends State<CameraScreen>
             .then((value) => _maxAvailableExposureOffset = value),
         cameraController
             .getMaxZoomLevel()
-            .then((value) => _maxAvailableZoom = value),
+            .then((value) => _maxAvailableZoom = value <= 4 ? value : 4),
         cameraController
             .getMinZoomLevel()
             .then((value) => _minAvailableZoom = value),
@@ -255,9 +259,39 @@ class _CameraScreenState extends State<CameraScreen>
       details.localPosition.dx / constraints.maxWidth,
       details.localPosition.dy / constraints.maxHeight,
     );
-    controller!.setExposurePoint(offset);
-    controller!.setFocusPoint(offset);
+
+    controller?.setExposurePoint(offset);
+    controller?.setFocusPoint(offset);
   }
+
+  void setZoomLvAsync(double zoom) async
+  {
+    if (controller == null)
+      {
+        return;
+      }
+
+        setState(() {
+          _currentZoomLevel = zoom;
+        });
+
+        await controller?.setZoomLevel(zoom);
+  }
+
+  void setZoomLv(double zoom)
+  {
+    if (controller == null)
+    {
+      return;
+    }
+
+    setState(() {
+      _currentZoomLevel = zoom;
+    });
+
+    controller?.setZoomLevel(zoom);
+  }
+
 
   @override
   void initState() {
@@ -312,6 +346,19 @@ class _CameraScreenState extends State<CameraScreen>
                                   behavior: HitTestBehavior.opaque,
                                   onTapDown: (details) =>
                                       onViewFinderTap(details, constraints),
+                                  onScaleStart: (ScaleStartDetails e) {
+                                    _tempZoom = _currentZoomLevel;
+                                  },
+                                  onScaleUpdate: (ScaleUpdateDetails e) {
+                                    double orig_scale = e.scale.toDouble();
+                                    double scale = orig_scale * _tempZoom;
+                                    scale = scale.clamp(_minAvailableZoom, _maxAvailableZoom).toDouble();
+                                    print("onScaleUpdate $scale, $orig_scale");
+                                    setZoomLv(scale.toDouble());
+                                  },
+                                  onScaleEnd: (ScaleEndDetails e) {
+                                    _tempZoom = 0;
+                                  }
                                 );
                               }),
                             ),
@@ -431,12 +478,8 @@ class _CameraScreenState extends State<CameraScreen>
                                           max: _maxAvailableZoom,
                                           activeColor: Colors.white,
                                           inactiveColor: Colors.white30,
-                                          onChanged: (value) async {
-                                            setState(() {
-                                              _currentZoomLevel = value;
-                                            });
-                                            await controller!
-                                                .setZoomLevel(value);
+                                          onChanged: (value)  {
+                                               setZoomLvAsync(value);
                                           },
                                         ),
                                       ),
