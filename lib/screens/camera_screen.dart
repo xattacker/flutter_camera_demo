@@ -102,7 +102,7 @@ class _CameraScreenState extends State<CameraScreen>
   Future<XFile?> takePicture() async {
     final CameraController? cameraController = controller;
 
-    if (cameraController!.value.isTakingPicture) {
+    if (cameraController == null || cameraController?.value.isTakingPicture == true) {
       // A capture is already pending, do nothing.
       return null;
     }
@@ -111,7 +111,7 @@ class _CameraScreenState extends State<CameraScreen>
       XFile file = await cameraController.takePicture();
       return file;
     } on CameraException catch (e) {
-      print('Error occured while taking picture: $e');
+      print('Error occurred while taking picture: $e');
       return null;
     }
   }
@@ -119,26 +119,27 @@ class _CameraScreenState extends State<CameraScreen>
   Future<void> _startVideoPlayer() async {
     if (_videoFile != null) {
       videoController = VideoPlayerController.file(_videoFile!);
-      await videoController!.initialize().then((_) {
+      await videoController?.initialize().then((_) {
         // Ensure the first frame is shown after the video is initialized,
         // even before the play button has been pressed.
         setState(() {});
       });
-      await videoController!.setLooping(true);
-      await videoController!.play();
+      await videoController?.setLooping(true);
+      await videoController?.play();
     }
   }
 
   Future<void> startVideoRecording() async {
-    final CameraController? cameraController = controller;
 
-    if (controller!.value.isRecordingVideo) {
+    if (controller == null || controller?.value.isRecordingVideo == true) {
       // A recording has already started, do nothing.
       return;
     }
 
+    final CameraController cameraController = controller!;
+
     try {
-      await cameraController!.startVideoRecording();
+      await cameraController.startVideoRecording();
       setState(() {
         _isRecordingInProgress = true;
         print(_isRecordingInProgress);
@@ -149,13 +150,13 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Future<XFile?> stopVideoRecording() async {
-    if (!controller!.value.isRecordingVideo) {
+    if (controller == null || controller?.value.isRecordingVideo == false) {
       // Recording is already is stopped state
       return null;
     }
 
     try {
-      XFile file = await controller!.stopVideoRecording();
+      XFile? file = await controller?.stopVideoRecording();
       setState(() {
         _isRecordingInProgress = false;
       });
@@ -167,26 +168,26 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Future<void> pauseVideoRecording() async {
-    if (!controller!.value.isRecordingVideo) {
+    if (controller == null || controller?.value.isRecordingVideo == false) {
       // Video recording is not in progress
       return;
     }
 
     try {
-      await controller!.pauseVideoRecording();
+      await controller?.pauseVideoRecording();
     } on CameraException catch (e) {
       print('Error pausing video recording: $e');
     }
   }
 
   Future<void> resumeVideoRecording() async {
-    if (!controller!.value.isRecordingVideo) {
+    if (controller == null || controller?.value.isRecordingVideo == false) {
       // No video recording was in progress
       return;
     }
 
     try {
-      await controller!.resumeVideoRecording();
+      await controller?.resumeVideoRecording();
     } on CameraException catch (e) {
       print('Error resuming video recording: $e');
     }
@@ -238,14 +239,14 @@ class _CameraScreenState extends State<CameraScreen>
             .then((value) => _minAvailableZoom = value),
       ]);
 
-      _currentFlashMode = controller!.value.flashMode;
+      _currentFlashMode = controller?.value.flashMode;
     } on CameraException catch (e) {
       print('Error initializing camera: $e');
     }
 
     if (mounted) {
       setState(() {
-        _isCameraInitialized = controller!.value.isInitialized;
+        _isCameraInitialized = controller?.value.isInitialized ?? false;
       });
     }
   }
@@ -329,12 +330,11 @@ class _CameraScreenState extends State<CameraScreen>
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: _isCameraPermissionGranted
-            ? _isCameraInitialized
+        body: _isCameraPermissionGranted ? _isCameraInitialized
                 ? Column(
                     children: [
                       AspectRatio(
-                        aspectRatio: 1 / controller!.value.aspectRatio,
+                        aspectRatio: 1 / (controller?.value.aspectRatio ?? 1),
                         child: Stack(
                           children: [
                             CameraPreview(
@@ -353,7 +353,7 @@ class _CameraScreenState extends State<CameraScreen>
                                     double orig_scale = e.scale.toDouble();
                                     double scale = orig_scale * _tempZoom;
                                     scale = scale.clamp(_minAvailableZoom, _maxAvailableZoom).toDouble();
-                                    print("onScaleUpdate $scale, $orig_scale");
+                                    //print("onScaleUpdate $scale, $orig_scale");
                                     setZoomLv(scale.toDouble());
                                   },
                                   onScaleEnd: (ScaleEndDetails e) {
@@ -418,8 +418,11 @@ class _CameraScreenState extends State<CameraScreen>
                                               currentResolutionPreset = value!;
                                               _isCameraInitialized = false;
                                             });
-                                            onNewCameraSelected(
-                                                controller!.description);
+
+                                            CameraDescription? desc = controller?.description;
+                                            if (desc != null) {
+                                              onNewCameraSelected(desc);
+                                            }
                                           },
                                           hint: Text("Select item"),
                                         ),
@@ -568,22 +571,16 @@ class _CameraScreenState extends State<CameraScreen>
                                         onTap: _isVideoCameraSelected
                                             ? () async {
                                                 if (_isRecordingInProgress) {
-                                                  XFile? rawVideo =
-                                                      await stopVideoRecording();
-                                                  File videoFile =
-                                                      File(rawVideo!.path);
+                                                  XFile? rawVideo = await stopVideoRecording();
+                                                  File videoFile = File(rawVideo!.path);
 
                                                   int currentUnix = DateTime
                                                           .now()
                                                       .millisecondsSinceEpoch;
 
-                                                  final directory =
-                                                      await getApplicationDocumentsDirectory();
+                                                  final directory = await getApplicationDocumentsDirectory();
 
-                                                  String fileFormat = videoFile
-                                                      .path
-                                                      .split('.')
-                                                      .last;
+                                                  String fileFormat = videoFile.path.split('.').last;
 
                                                   _videoFile =
                                                       await videoFile.copy(
@@ -596,21 +593,15 @@ class _CameraScreenState extends State<CameraScreen>
                                                 }
                                               }
                                             : () async {
-                                                XFile? rawImage =
-                                                    await takePicture();
-                                                File imageFile =
-                                                    File(rawImage!.path);
+                                                XFile? rawImage = await takePicture();
+                                                File imageFile = File(rawImage!.path);
 
                                                 int currentUnix = DateTime.now()
                                                     .millisecondsSinceEpoch;
 
-                                                final directory =
-                                                    await getApplicationDocumentsDirectory();
+                                                final directory = await getApplicationDocumentsDirectory();
 
-                                                String fileFormat = imageFile
-                                                    .path
-                                                    .split('.')
-                                                    .last;
+                                                String fileFormat = imageFile.path.split('.').last;
 
                                                 print(fileFormat);
 
@@ -787,7 +778,7 @@ class _CameraScreenState extends State<CameraScreen>
                                         setState(() {
                                           _currentFlashMode = FlashMode.off;
                                         });
-                                        await controller!.setFlashMode(
+                                        await controller?.setFlashMode(
                                           FlashMode.off,
                                         );
                                       },
@@ -804,7 +795,7 @@ class _CameraScreenState extends State<CameraScreen>
                                         setState(() {
                                           _currentFlashMode = FlashMode.auto;
                                         });
-                                        await controller!.setFlashMode(
+                                        await controller?.setFlashMode(
                                           FlashMode.auto,
                                         );
                                       },
@@ -821,9 +812,7 @@ class _CameraScreenState extends State<CameraScreen>
                                         setState(() {
                                           _currentFlashMode = FlashMode.always;
                                         });
-                                        await controller!.setFlashMode(
-                                          FlashMode.always,
-                                        );
+                                        await controller?.setFlashMode(FlashMode.always);
                                       },
                                       child: Icon(
                                         Icons.flash_on,
@@ -838,9 +827,7 @@ class _CameraScreenState extends State<CameraScreen>
                                         setState(() {
                                           _currentFlashMode = FlashMode.torch;
                                         });
-                                        await controller!.setFlashMode(
-                                          FlashMode.torch,
-                                        );
+                                        await controller?.setFlashMode(FlashMode.torch);
                                       },
                                       child: Icon(
                                         Icons.highlight,
