@@ -1,6 +1,4 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-
 import 'CameraManager.dart';
 import 'screens/camera_screen.dart';
 

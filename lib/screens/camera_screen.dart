@@ -10,7 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 import '../CameraManager.dart';
-import '../main.dart';
 
 class CameraScreen extends StatefulWidget {
   @override

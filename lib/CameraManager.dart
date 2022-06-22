@@ -5,7 +5,7 @@ class CameraManager
 {
   CameraDescription? getCamera(int index)
   {
-       if (_cameras == null || index < 0 || index >= _cameras.length)
+       if (_cameras.isEmpty || index < 0 || index >= _cameras.length)
        {
          return null;
        }
