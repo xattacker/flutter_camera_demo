@@ -27,7 +27,7 @@ class FocusFramePainter extends CustomPainter
       paint.style = PaintingStyle.stroke;
 
       var frame_length = size.width * 0.15;
-      var increment_unit = frame_length * 0.08 * _incrementSize;
+      var increment_unit = frame_length * 0.08 * _incrementSize; // let frame size change with increment
       var line_length = frame_length * 0.05;
       paint.strokeWidth = line_length;
       var offset = paint.strokeWidth/2;

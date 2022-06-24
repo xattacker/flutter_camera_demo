@@ -60,7 +60,7 @@ class _FocusScreenState extends State<FocusScreenWidget>
     Widget build(BuildContext context)
     {
         return Opacity(
-                    opacity: 1 / (this.widget._incrementSize + 1),
+                    opacity: 1 / (this.widget._incrementSize + 1), //  let opacity change with increment
                     child:
                     CustomPaint(
                         size: Size(MediaQuery.of(context).size.width, MediaQuery.of(context).size.width),
