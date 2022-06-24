@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 import '../CameraManager.dart';
+import 'FocusScreenWidget.dart';
 
 class CameraScreen extends StatefulWidget {
   @override
@@ -44,6 +45,7 @@ class _CameraScreenState extends State<CameraScreen>
   double _currentExposureOffset = 0.0;
   FlashMode? _currentFlashMode;
 
+  FocusScreenWidget _focusScreenWidget = FocusScreenWidget();
 
   final resolutionPresets = ResolutionPreset.values;
   ResolutionPreset _currentResolutionPreset = ResolutionPreset.high;
@@ -257,11 +259,12 @@ class _CameraScreenState extends State<CameraScreen>
     }
 
     final offset = Offset(
-      details.localPosition.dx / constraints.maxWidth,
-      details.localPosition.dy / constraints.maxHeight);
-
+                          details.localPosition.dx / constraints.maxWidth,
+                          details.localPosition.dy / constraints.maxHeight);
     _cameraCtrl?.setExposurePoint(offset);
     _cameraCtrl?.setFocusPoint(offset);
+
+    _focusScreenWidget.focusPosition = details.localPosition;
   }
 
   void setZoomLvAsync(double zoom) async
@@ -338,8 +341,7 @@ class _CameraScreenState extends State<CameraScreen>
                             CameraPreview(
                               _cameraCtrl!,
                               child: LayoutBuilder(builder:
-                                  (BuildContext context,
-                                      BoxConstraints constraints) {
+                                  (BuildContext context, BoxConstraints constraints) {
                                 return GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTapDown: (details) =>
@@ -360,15 +362,9 @@ class _CameraScreenState extends State<CameraScreen>
                                 );
                               }),
                             ),
-                            // TODO: Uncomment to preview the overlay
-                            // Center(
-                            //   child: Image.asset(
-                            //     'assets/camera_aim.png',
-                            //     color: Colors.greenAccent,
-                            //     width: 150,
-                            //     height: 150,
-                            //   ),
-                            // ),
+                            IgnorePointer(
+                              child: _focusScreenWidget // draw focus frame
+                            ),
                             Padding(
                               padding: const EdgeInsets.fromLTRB(
                                 16.0,
@@ -440,9 +436,7 @@ class _CameraScreenState extends State<CameraScreen>
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
-                                          _currentExposureOffset
-                                                  .toStringAsFixed(1) +
-                                              'x',
+                                          _currentExposureOffset.toStringAsFixed(1) + 'x',
                                           style: TextStyle(color: Colors.black),
                                         ),
                                       ),
@@ -571,18 +565,14 @@ class _CameraScreenState extends State<CameraScreen>
                                                   File videoFile = File(rawVideo!.path);
 
                                                   int currentUnix = DateTime.now().millisecondsSinceEpoch;
-
                                                   final directory = await getApplicationDocumentsDirectory();
-
                                                   String fileFormat = videoFile.path.split('.').last;
 
-                                                  _videoFile =
-                                                      await videoFile.copy(
-                                                    '${directory.path}/$currentUnix.$fileFormat',
-                                                  );
-
+                                                  _videoFile = await videoFile.copy('${directory.path}/$currentUnix.$fileFormat');
                                                   _startVideoPlayer();
-                                                } else {
+                                                }
+                                                else
+                                                {
                                                   await startVideoRecording();
                                                 }
                                               }
@@ -590,19 +580,13 @@ class _CameraScreenState extends State<CameraScreen>
                                                 XFile? rawImage = await takePicture();
                                                 File imageFile = File(rawImage!.path);
 
-                                                int currentUnix = DateTime.now()
-                                                    .millisecondsSinceEpoch;
+                                                int currentUnix = DateTime.now().millisecondsSinceEpoch;
 
                                                 final directory = await getApplicationDocumentsDirectory();
-
                                                 String fileFormat = imageFile.path.split('.').last;
-
                                                 print(fileFormat);
 
-                                                await imageFile.copy(
-                                                  '${directory.path}/$currentUnix.$fileFormat',
-                                                );
-
+                                                await imageFile.copy('${directory.path}/$currentUnix.$fileFormat');
                                                 refreshAlreadyCapturedImages();
                                               },
                                         child: Stack(
@@ -652,18 +636,11 @@ class _CameraScreenState extends State<CameraScreen>
                                           height: 60,
                                           decoration: BoxDecoration(
                                             color: Colors.black,
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                            border: Border.all(
-                                              color: Colors.white,
-                                              width: 2,
-                                            ),
-                                            image: _imageFile != null
-                                                ? DecorationImage(
-                                                    image:
-                                                        FileImage(_imageFile!),
-                                                    fit: BoxFit.cover,
-                                                  )
+                                            borderRadius: BorderRadius.circular(10.0),
+                                            border: Border.all(color: Colors.white, width: 2),
+                                            image:
+                                                _imageFile != null ?
+                                                DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
                                                 : null,
                                           ),
                                           child: _videoCtrl != null &&
@@ -769,6 +746,7 @@ class _CameraScreenState extends State<CameraScreen>
                                         setState(() {
                                           _currentFlashMode = FlashMode.off;
                                         });
+
                                         await _cameraCtrl?.setFlashMode(
                                           FlashMode.off,
                                         );
