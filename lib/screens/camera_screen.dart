@@ -11,20 +11,24 @@ import 'package:video_player/video_player.dart';
 
 import '../CameraManager.dart';
 import 'FocusScreenWidget.dart';
+import 'PhotoBarWidget.dart';
 
-class CameraScreen extends StatefulWidget {
+
+class CameraScreen extends StatefulWidget
+{
   @override
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen>
-    with WidgetsBindingObserver {
+
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
   CameraController? _cameraCtrl;
   VideoPlayerController? _videoCtrl;
 
   File? _imageFile;
   File? _videoFile;
   List<File> _allFileList = [];
+  PhotoBarWidget _photoBarWidget = PhotoBarWidget();
 
   // Initial values
   bool _isCameraInitialized = false;
@@ -88,15 +92,16 @@ class _CameraScreenState extends State<CameraScreen>
     });
 
     if (fileNames.isNotEmpty) {
-      final recentFile =
-          fileNames.reduce((curr, next) => curr[0] > next[0] ? curr : next);
+      final recentFile = fileNames.reduce((curr, next) => curr[0] > next[0] ? curr : next);
       String recentFileName = recentFile[1];
+
       if (recentFileName.contains('.mp4')) {
         _videoFile = File('${directory.path}/$recentFileName');
         _imageFile = null;
         _startVideoPlayer();
       } else {
         _imageFile = File('${directory.path}/$recentFileName');
+        _photoBarWidget.addPhoto(_imageFile!);
         _videoFile = null;
       }
 
@@ -463,43 +468,7 @@ class _CameraScreenState extends State<CameraScreen>
                                       ),
                                     ),
                                   ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Slider(
-                                          value: _currentZoomLevel,
-                                          min: _minAvailableZoom,
-                                          max: _maxAvailableZoom,
-                                          activeColor: Colors.white,
-                                          inactiveColor: Colors.white30,
-                                          onChanged: (value)  {
-                                               setZoomLvAsync(value);
-                                          },
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8.0),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.black87,
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              _currentZoomLevel
-                                                      .toStringAsFixed(1) +
-                                                  'x',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                  _photoBarWidget,
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
