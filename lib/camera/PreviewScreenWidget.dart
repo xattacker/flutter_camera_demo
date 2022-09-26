@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_camera_demo/screens/captures_screen.dart';
+import 'package:flutter_camera_demo/camera/CapturesScreenWidget.dart';
 
-class PreviewScreen extends StatelessWidget {
+class PreviewScreenWidget extends StatelessWidget {
   final File imageFile;
   final List<File> fileList;
 
-  const PreviewScreen({
+  const PreviewScreenWidget({
     required this.imageFile,
     required this.fileList,
   });

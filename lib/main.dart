@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'CameraManager.dart';
-import 'screens/camera_screen.dart';
+import 'camera/CameraManager.dart';
+import 'camera/CameraWidget.dart';
 
 Future<void> main() async {
   // Fetch the available cameras before initializing the app.
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: CameraScreen(),
+      home: CameraWidget(),
     );
   }
 }

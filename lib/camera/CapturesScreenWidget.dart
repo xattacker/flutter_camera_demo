@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_camera_demo/screens/preview_screen.dart';
+import 'package:flutter_camera_demo/camera/PreviewScreenWidget.dart';
 
 class CapturesScreen extends StatelessWidget {
   final List<File> imageFileList;
@@ -44,10 +44,11 @@ class CapturesScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (context) => PreviewScreen(
-                              fileList: imageFileList,
-                              imageFile: imageFile,
-                            ),
+                            builder: (context) =>
+                                PreviewScreenWidget(
+                                  fileList: imageFileList,
+                                  imageFile: imageFile,
+                                ),
                           ),
                         );
                       },

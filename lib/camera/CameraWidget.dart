@@ -5,24 +5,24 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_camera_demo/Extension.dart';
-import 'package:flutter_camera_demo/screens/preview_screen.dart';
+import 'package:flutter_camera_demo/camera/PreviewScreenWidget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
-import '../CameraManager.dart';
+import 'CameraManager.dart';
 import 'FocusScreenWidget.dart';
 import 'PhotoBarWidget.dart';
 
 
-class CameraScreen extends StatefulWidget
+class CameraWidget extends StatefulWidget
 {
   @override
-  _CameraScreenState createState() => _CameraScreenState();
+  _CameraWidgetState createState() => _CameraWidgetState();
 }
 
 
-class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
+class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver {
   CameraController? _cameraCtrl;
   VideoPlayerController? _videoCtrl;
 
@@ -601,7 +601,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
                                                 Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                     builder: (context) =>
-                                                        PreviewScreen(
+                                                        PreviewScreenWidget(
                                                       imageFile: _imageFile!,
                                                       fileList: _allFileList,
                                                     ),
