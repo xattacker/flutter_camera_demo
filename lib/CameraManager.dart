@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 
 class CameraManager
 {
+  List<CameraDescription> _cameras = [];
+
   CameraDescription? getCamera(int index)
   {
        if (_cameras.isEmpty || index < 0 || index >= _cameras.length)
@@ -15,12 +17,15 @@ class CameraManager
 
   CameraDescription? getCameraByDirection(CameraLensDirection direction)
   {
+        if (_cameras.isEmpty)
+        {
+            return null;
+        }
+
         return  _cameras.firstWhere((element) => element.lensDirection == direction);
   }
 
   int get cameraCount => _cameras.length;
-
-  List<CameraDescription> _cameras = [];
 
   // singleton pattern
   CameraManager._internal();

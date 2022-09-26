@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_camera_demo/Extension.dart';
 import 'package:flutter_camera_demo/screens/preview_screen.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -64,15 +65,23 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
         _isCameraPermissionGranted = true;
       });
 
-      // Set and initialize the new camera
-      CameraDescription? camera = CameraManager().getCameraByDirection(CameraLensDirection.back);
-      if (camera != null)
-      {
-        onNewCameraSelected(camera);
-        refreshAlreadyCapturedImages();
-      }
-    } else {
-      log('Camera Permission: DENIED');
+        // Set and initialize the new camera
+        CameraDescription? camera = CameraManager().getCameraByDirection(CameraLensDirection.back);
+        if (camera != null)
+        {
+            onNewCameraSelected(camera);
+            refreshAlreadyCapturedImages();
+        }
+        else
+        {
+              context.showAlertDialog("Error", "There is no Camera");
+        }
+    }
+    else
+    {
+        log('Camera Permission: DENIED');
+
+        context.showAlertDialog("Error", "Camera Permission DENIED");
     }
   }
 
