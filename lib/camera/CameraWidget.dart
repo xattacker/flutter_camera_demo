@@ -101,8 +101,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     final directory = await getApplicationDocumentsDirectory();
     List<FileSystemEntity> fileList = await directory.list().toList();
     _allFileList.clear();
-    List<Map<int, dynamic>> fileNames = [];
 
+    List<Map<int, dynamic>> fileNames = [];
     fileList.forEach((file) {
       if (file.path.contains('.jpg') || file.path.contains('.mp4')) {
         _allFileList.add(File(file.path));
@@ -848,8 +848,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                     ElevatedButton(
                       child: Text('Back', style: TextStyle(color: Colors.white)),
                       onPressed: () {
-                        List<File> files = [];
-                        this.widget._listener.target?.onPictureTaken(files);
+                        this.widget._listener.target?.onPictureTaken(this._allFileList);
                         Navigator.pop(context);
                       },
                     ),
