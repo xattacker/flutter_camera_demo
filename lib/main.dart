@@ -6,7 +6,7 @@ import 'camera/CameraWidget.dart';
 Future<void> main() async {
   // Fetch the available cameras before initializing the app.
   CameraManager().initial((ex) {
-    print('Error in fetching the cameras: $ex');
+    debugPrint('Error in fetching the cameras: $ex');
   });
 
   runApp(MyApp());

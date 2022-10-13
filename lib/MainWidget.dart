@@ -8,7 +8,7 @@ import 'package:flutter_camera_demo/camera/CameraWidget.dart';
 import 'util/SlidedPageRouteBuilder.dart';
 
 
-class MainWidget extends StatelessWidget
+class MainWidget extends StatelessWidget implements CameraWidgetListener
 {
   @override
   Widget build(BuildContext context) {
@@ -24,11 +24,17 @@ class MainWidget extends StatelessWidget
                   onPressed: () {
                   Navigator.push(
                     context,
-                      CupertinoPageRoute(builder: (context) => CameraWidget())
+                      CupertinoPageRoute(builder: (context) => CameraWidget(this))
                   );
                 },
               )
             )
         ));
+  }
+
+  @override
+  void onPictureTaken(List<File> pictures)
+  {
+    debugPrint("onPictureTaken ");
   }
 }

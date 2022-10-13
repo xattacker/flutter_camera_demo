@@ -14,8 +14,6 @@ class FocusScreenWidget extends StatefulWidget
     int _incrementSize = 0;
 
     set focusPosition(Offset position) {
-        print("set focusPosition");
-
         _state.setState(() {
             _focusPosition = position;
         });

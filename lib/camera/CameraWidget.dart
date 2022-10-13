@@ -15,8 +15,20 @@ import 'FocusScreenWidget.dart';
 import 'PhotoBarWidget.dart';
 
 
+abstract class CameraWidgetListener
+{
+    void onPictureTaken(List<File> pictures);
+}
+
 class CameraWidget extends StatefulWidget
 {
+  late WeakReference<CameraWidgetListener> _listener;
+
+  CameraWidget(CameraWidgetListener listener)
+  {
+    _listener = WeakReference(listener);
+  }
+
   @override
   _CameraWidgetState createState() => _CameraWidgetState();
 }
@@ -129,7 +141,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       XFile file = await cameraController.takePicture();
       return file;
     } on CameraException catch (e) {
-      print('Error occurred while taking picture: $e');
+      debugPrint('Error occurred while taking picture: $e');
       return null;
     }
   }
@@ -158,10 +170,9 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       await cameraController.startVideoRecording();
       setState(() {
         _isRecordingInProgress = true;
-        print(_isRecordingInProgress);
       });
     } on CameraException catch (e) {
-      print('Error starting to record video: $e');
+      debugPrint('Error starting to record video: $e');
     }
   }
 
@@ -178,7 +189,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       });
       return file;
     } on CameraException catch (e) {
-      print('Error stopping video recording: $e');
+      debugPrint('Error stopping video recording: $e');
       return null;
     }
   }
@@ -192,7 +203,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     try {
       await _cameraCtrl?.pauseVideoRecording();
     } on CameraException catch (e) {
-      print('Error pausing video recording: $e');
+      debugPrint('Error pausing video recording: $e');
     }
   }
 
@@ -205,7 +216,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     try {
       await _cameraCtrl?.resumeVideoRecording();
     } on CameraException catch (e) {
-      print('Error resuming video recording: $e');
+      debugPrint('Error resuming video recording: $e');
     }
   }
 
@@ -257,7 +268,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
       _currentFlashMode = _cameraCtrl?.value.flashMode;
     } on CameraException catch (e) {
-      print('Error initializing camera: $e');
+      debugPrint('Error initializing camera: $e');
     }
 
     if (mounted) {
@@ -564,7 +575,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
                                       final directory = await getApplicationDocumentsDirectory();
                                       String fileFormat = imageFile.path.split('.').last;
-                                      print(fileFormat);
+                                      debugPrint(fileFormat);
 
                                       await imageFile.copy('${directory.path}/$currentUnix.$fileFormat');
                                       refreshAlreadyCapturedImages();
@@ -837,6 +848,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                     ElevatedButton(
                       child: Text('Back', style: TextStyle(color: Colors.white)),
                       onPressed: () {
+                        List<File> files = [];
+                        this.widget._listener.target?.onPictureTaken(files);
                         Navigator.pop(context);
                       },
                     ),
