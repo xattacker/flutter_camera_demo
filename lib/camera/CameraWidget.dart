@@ -294,9 +294,9 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
   void setZoomLvAsync(double zoom) async
   {
-    if (_cameraCtrl == null)
+      if (_cameraCtrl == null)
       {
-        return;
+         return;
       }
 
         setState(() {
@@ -310,7 +310,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   {
     if (_cameraCtrl == null)
     {
-      return;
+       return;
     }
 
     setState(() {
@@ -319,7 +319,6 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
     _cameraCtrl?.setZoomLevel(zoom);
   }
-
 
   @override
   void initState() {
