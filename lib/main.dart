@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_camera_demo/MainWidget.dart';
+import 'package:flutter_camera_demo/EntryWidget.dart';
 import 'camera/CameraManager.dart';
 import 'camera/CameraWidget.dart';
 

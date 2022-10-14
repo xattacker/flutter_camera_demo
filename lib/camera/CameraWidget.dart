@@ -900,32 +900,63 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-                 _createStatusWidget(),
+      child: WillPopScope(
+        onWillPop: _onBackPressed,
+        child:
+        Scaffold(
+            backgroundColor: Colors.black,
+            body: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  _createStatusWidget(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
-                            child:
-                            ElevatedButton(
-                              child: Text('Back', style: TextStyle(color: Colors.white)),
-                              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-                              onPressed: () {
-                                this.widget._listener.target?.onPictureTaken(this._allFileList);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            )
+                          padding: EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
+                          child:
+                          ElevatedButton(
+                            child: Text('Back', style: TextStyle(color: Colors.white)),
+                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                            onPressed: () {
+                              _onBackPressed();
+                            },
+                          ),
+                        )
                       ]
                   )
-            ])
+                ])
+        )
       ),
     );
+  }
+
+  Future<bool> _onBackPressed() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        title: new Text('Confirm'),
+        content: new Text('Do you want to Exit ?'),
+        actions: <Widget>[ Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+            TextButton(
+                child: Text("NO", textAlign: TextAlign.center),
+                onPressed: () {
+                  Navigator.of(context).pop(false); //关闭对话框
+                }),
+              TextButton(
+                  child: Text("YES", textAlign: TextAlign.center),
+                  onPressed: () {
+                    Navigator.of(context).pop(false); //关闭对话框
+                    Navigator.of(this.context).pop(true); // 返回前一頁
+                  }
+              )
+            ])
+        ],
+      ),
+    ) ??
+    false;
   }
 }
