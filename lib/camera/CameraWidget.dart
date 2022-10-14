@@ -20,6 +20,16 @@ abstract class CameraWidgetListener
     void onPictureTaken(List<File> pictures);
 }
 
+enum CameraStatus
+{
+  unstarted,
+  permissionDenied,
+  initialing,
+  started,
+  failed
+}
+
+
 class CameraWidget extends StatefulWidget
 {
   late WeakReference<CameraWidgetListener> _listener;
@@ -35,6 +45,7 @@ class CameraWidget extends StatefulWidget
 
 
 class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver {
+  CameraStatus _status = CameraStatus.unstarted;
   CameraController? _cameraCtrl;
   VideoPlayerController? _videoCtrl;
 
@@ -44,8 +55,6 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   PhotoBarWidget _photoBarWidget = PhotoBarWidget();
 
   // Initial values
-  bool _isCameraInitialized = false;
-  bool _isCameraPermissionGranted = false;
   CameraLensDirection _currentCameraDirection = CameraLensDirection.back;
   bool _isVideoCameraSelected = false;
   bool _isRecordingInProgress = false;
@@ -67,15 +76,21 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   final resolutionPresets = ResolutionPreset.values;
   ResolutionPreset _currentResolutionPreset = ResolutionPreset.high;
 
+  void updateStatus(CameraStatus status)
+  {
+    setState(() {
+      _status = status;
+    });
+  }
+
   getPermissionStatus() async {
     await Permission.camera.request();
     var status = await Permission.camera.status;
 
     if (status.isGranted) {
-      log('Camera Permission: GRANTED');
-      setState(() {
-        _isCameraPermissionGranted = true;
-      });
+      debugPrint('Camera Permission: GRANTED');
+
+      this.updateStatus(CameraStatus.initialing);
 
         // Set and initialize the new camera
         CameraDescription? camera = CameraManager().getCameraByDirection(CameraLensDirection.back);
@@ -86,13 +101,14 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
         }
         else
         {
+              this.updateStatus(CameraStatus.failed);
               context.showAlertDialog("Error", "There is no Camera");
         }
     }
     else
     {
-        log('Camera Permission: DENIED');
-
+        debugPrint('Camera Permission: DENIED');
+        this.updateStatus(CameraStatus.permissionDenied);
         context.showAlertDialog("Error", "Camera Permission DENIED");
     }
   }
@@ -284,10 +300,9 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       debugPrint('Error initializing camera: $e');
     }
 
-    if (mounted) {
-      setState(() {
-        _isCameraInitialized = _cameraCtrl?.value.isInitialized ?? false;
-      });
+    if (mounted)
+    {
+        updateStatus(_cameraCtrl?.value.isInitialized == true ? CameraStatus.started : CameraStatus.failed);
     }
   }
 
@@ -410,10 +425,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                                 )
                             ],
                             onChanged: (value) {
-                              setState(() {
-                                _currentResolutionPreset = value!;
-                                _isCameraInitialized = false;
-                              });
+                              _currentResolutionPreset = value!;
+                              updateStatus(CameraStatus.initialing);
 
                               CameraDescription? desc = _cameraCtrl?.description;
                               if (desc != null) {
@@ -480,14 +493,13 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                             }
                           }
                               : () {
-                            setState(() {
-                              _isCameraInitialized = false;
-                            });
+                           updateStatus(CameraStatus.initialing);
 
                             CameraDescription? camera = CameraManager().getCameraByDirection(_currentCameraDirection.theOther);
                             if (camera != null)
                             {
                               onNewCameraSelected(camera);
+
                               setState(() {
                                 _currentCameraDirection = _currentCameraDirection.theOther;
                               });
@@ -823,11 +835,43 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
           );
   }
 
+  Widget _createFailureWidget()
+  {
+    return Center(
+        child: Text('Camera Failure', style: TextStyle(color: Colors.white))
+    );
+  }
+
+  Widget _createStatusWidget()
+  {
+      switch (this._status)
+      {
+          case CameraStatus.unstarted:
+            return _createLoadingWidget();
+
+         case CameraStatus.permissionDenied:
+            return _createPermissionDeniedWidget();
+
+        case CameraStatus.initialing:
+          return _createLoadingWidget();
+
+        case CameraStatus.started:
+          return _createMainWidget();
+
+        case CameraStatus.failed:
+          return _createFailureWidget();
+      }
+  }
+
   @override
   void initState() {
     // Hide the status bar in Android
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    getPermissionStatus();
+
+    Future.delayed(Duration(milliseconds: 300), () {
+      getPermissionStatus();
+    });
+
     super.initState();
   }
 
@@ -861,22 +905,23 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
         body: Stack(
             alignment: Alignment.topCenter,
             children: [
-                 _isCameraPermissionGranted ? _isCameraInitialized
-                  ? _createMainWidget()
-                  : _createLoadingWidget()
-                  : _createPermissionDeniedWidget(),
+                 _createStatusWidget(),
                   Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ElevatedButton(
-                          child: Text('Back', style: TextStyle(color: Colors.white)),
-                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-                          onPressed: () {
-                            this.widget._listener.target?.onPictureTaken(this._allFileList);
-                            Navigator.pop(context);
-                          },
-                        ),
+                        Padding(
+                            padding: EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
+                            child:
+                            ElevatedButton(
+                              child: Text('Back', style: TextStyle(color: Colors.white)),
+                              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                              onPressed: () {
+                                this.widget._listener.target?.onPictureTaken(this._allFileList);
+                                Navigator.pop(context);
+                              },
+                            ),
+                            )
                       ]
                   )
             ])
