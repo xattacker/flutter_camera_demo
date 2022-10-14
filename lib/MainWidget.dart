@@ -35,6 +35,6 @@ class MainWidget extends StatelessWidget implements CameraWidgetListener
   @override
   void onPictureTaken(List<File> pictures)
   {
-    debugPrint("onPictureTaken ");
+      debugPrint("onPictureTaken: "  + pictures.length.toString());
   }
 }
