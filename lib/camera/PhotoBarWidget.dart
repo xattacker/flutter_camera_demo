@@ -39,10 +39,10 @@ class PhotoBarWidget extends StatefulWidget
         });
     }
 
-    PhotoBarWidgetListener? _listener;
+    WeakReference<PhotoBarWidgetListener>? _listener;
     set listener(PhotoBarWidgetListener listener)
     {
-        _listener = listener;
+        _listener = WeakReference(listener);
     }
 
     @override
@@ -89,7 +89,7 @@ class _PhotoBarState extends State<PhotoBarWidget>
                                     Container(
                                         alignment: Alignment.center,
                                         decoration: BoxDecoration(
-                                            color: Colors.amber,
+                                            color: Colors.grey.shade300,
                                             image:
                                                 item.file != null ?
                                                 DecorationImage(image: FileImage(item.file!), fit: BoxFit.cover)
@@ -106,7 +106,7 @@ class _PhotoBarState extends State<PhotoBarWidget>
                                 onTap: () {
                                     setState(() {
                                         this.widget.selectedIndex = index;
-                                        this.widget._listener?.onPhotoItemSelected(item);
+                                        this.widget._listener?.target?.onPhotoItemSelected(item);
                                     });
                                 },
                                 child: container

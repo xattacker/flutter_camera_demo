@@ -60,11 +60,11 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   bool _isRecordingInProgress = false;
   double _minAvailableExposureOffset = 0.0;
   double _maxAvailableExposureOffset = 0.0;
-  double _minAvailableZoom = 1.0;
-  double _maxAvailableZoom = 1.0;
-
+  
+  double _minZoom = 1.0;
+  double _maxZoom = 1.0;
   // Current values
-  double _currentZoomLevel = 1.0;
+  double _currentZoom = 1.0;
   // temp scale for Gesture Pinch
   double _tempZoom = 1.0;
 
@@ -286,7 +286,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   }
 
   void resetCameraValues() async {
-    _currentZoomLevel = 1.0;
+    _currentZoom = 1.0;
     _currentExposureOffset = 0.0;
   }
 
@@ -325,10 +325,10 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
             .then((value) => _maxAvailableExposureOffset = value),
         cameraController
             .getMaxZoomLevel()
-            .then((value) => _maxAvailableZoom = value <= 4 ? value : 4),
+            .then((value) => _maxZoom = value <= 4 ? value : 4),
         cameraController
             .getMinZoomLevel()
-            .then((value) => _minAvailableZoom = value),
+            .then((value) => _minZoom = value),
       ]);
 
       _currentFlashMode = _cameraCtrl?.value.flashMode;
@@ -364,7 +364,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       }
 
         setState(() {
-          _currentZoomLevel = zoom;
+          _currentZoom = zoom;
         });
 
         await _cameraCtrl?.setZoomLevel(zoom);
@@ -378,7 +378,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     }
 
     setState(() {
-      _currentZoomLevel = zoom;
+      _currentZoom = zoom;
     });
 
     _cameraCtrl?.setZoomLevel(zoom);
@@ -401,12 +401,12 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                       onTapDown: (details) =>
                           onViewFinderTap(details, constraints),
                       onScaleStart: (ScaleStartDetails e) {
-                        _tempZoom = _currentZoomLevel;
+                        _tempZoom = _currentZoom;
                       },
                       onScaleUpdate: (ScaleUpdateDetails e) {
                         double orig_scale = e.scale.toDouble();
                         double scale = orig_scale * _tempZoom;
-                        scale = scale.clamp(_minAvailableZoom, _maxAvailableZoom).toDouble();
+                        scale = scale.clamp(_minZoom, _maxZoom).toDouble();
                         //print("onScaleUpdate $scale, $orig_scale");
                         setZoomLv(scale.toDouble());
                       },
