@@ -387,7 +387,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     return Column(
       children: [
             AspectRatio(
-            aspectRatio: 1 / (_cameraCtrl?.value.aspectRatio ?? 1),
+            aspectRatio: 1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
             child:
             Stack(
             children: [
@@ -420,135 +420,52 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                        BorderRadius.circular(10.0),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                          _currentExposureOffset.toStringAsFixed(1) + 'x',
-                          style: TextStyle(color: Colors.black),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child:
-                        RotatedBox(
-                        quarterTurns: 3,
-                        child: Container(
-                          height: 30,
-                          child: Slider(
-                            value: _currentExposureOffset,
-                            min: _minExposureOffset,
-                            max: _maxExposureOffset,
-                            activeColor: Colors.white,
-                            inactiveColor: Colors.white30,
-                            onChanged: (value) async {
-                              setState(() {
-                                _currentExposureOffset = value;
-                              });
-                              await _cameraCtrl?.setExposureOffset(value);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                    _photoBarWidget,
+                child:
                     Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        InkWell(
-                          onTap: _isRecordingInProgress
-                              ? () async {
-                            if (_cameraCtrl?.value.isRecordingPaused == true) {
-                              await resumeVideoRecording();
-                            } else {
-                              await pauseVideoRecording();
-                            }
-                          }
-                              : () {
-                           updateStatus(CameraStatus.initialing);
-
-                            CameraDescription? camera = CameraManager().getCameraByDirection(_currentCameraDirection.theOther);
-                            if (camera != null)
-                            {
-                              onNewCameraSelected(camera);
-
-                              setState(() {
-                                _currentCameraDirection = _currentCameraDirection.theOther;
-                              });
-                            }
-                          },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                color: Colors.black38,
-                                size: 60),
-                              _isRecordingInProgress
-                                  ? _cameraCtrl?.value.isRecordingPaused == true
-                                  ? Icon(
-                                Icons.play_arrow,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
                                 color: Colors.white,
-                                size: 30)
-                                  : Icon(
-                                Icons.pause,
-                                color: Colors.white,
-                                size: 30)
-                              : Icon(
-                                _currentCameraDirection == CameraLensDirection.front ? Icons.camera_front : Icons.camera_rear,
-                                color: Colors.white,
-                                size: 30)
-                            ],
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            _take();
-                        },
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                Icons.circle,
-                                color: _isVideoCameraSelected ? Colors.white : Colors.white38,
-                                size: 80,
+                                borderRadius: BorderRadius.circular(10.0),
                               ),
-                              Icon(
-                                Icons.circle,
-                                color: _isVideoCameraSelected ? Colors.red : Colors.white,
-                                size: 65,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                    _currentExposureOffset.toStringAsFixed(1) + 'x',
+                                    style: TextStyle(color: Colors.black)),
                               ),
-                              _isVideoCameraSelected && _isRecordingInProgress
-                                  ? Icon(
-                                Icons.stop_rounded,
-                                color: Colors.white,
-                                size: 32,
-                              )
-                                  : Container(),
-                            ],
-                          ),
+                            ),
+                            Expanded(
+                              child:
+                              RotatedBox(
+                                quarterTurns: 3,
+                                child: Container(
+                                  height: 30,
+                                  child: Slider(
+                                    value: _currentExposureOffset,
+                                    min: _minExposureOffset,
+                                    max: _maxExposureOffset,
+                                    activeColor: Colors.white,
+                                    inactiveColor: Colors.white30,
+                                    onChanged: (value) async {
+                                      setState(() {
+                                        _currentExposureOffset = value;
+                                      });
+                                      await _cameraCtrl?.setExposureOffset(value);
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        ElevatedButton(
-                          child: Text('Done', style: TextStyle(color: Colors.black)),
-                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
-                          onPressed: () {
-                            this.widget._listener.target?.onPictureTaken(_allFileList);
-                            Navigator.of(this.context).pop(true); // 返回前一頁
-                          },
-                        )
-                      ],
-                    ),
-                  ],
-                ),
+                      ])
               ),
             ],
           )
@@ -558,6 +475,93 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
             physics: BouncingScrollPhysics(),
             child: Column(
               children: [
+                _photoBarWidget,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: _isRecordingInProgress
+                          ? () async {
+                        if (_cameraCtrl?.value.isRecordingPaused == true) {
+                          await resumeVideoRecording();
+                        } else {
+                          await pauseVideoRecording();
+                        }
+                      }
+                          : () {
+                        updateStatus(CameraStatus.initialing);
+
+                        CameraDescription? camera = CameraManager().getCameraByDirection(_currentCameraDirection.theOther);
+                        if (camera != null)
+                        {
+                          onNewCameraSelected(camera);
+
+                          setState(() {
+                            _currentCameraDirection = _currentCameraDirection.theOther;
+                          });
+                        }
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                              Icons.circle,
+                              color: Colors.black38,
+                              size: 60),
+                          _isRecordingInProgress
+                              ? _cameraCtrl?.value.isRecordingPaused == true
+                              ? Icon(
+                              Icons.play_arrow,
+                              color: Colors.white,
+                              size: 30)
+                              : Icon(
+                              Icons.pause,
+                              color: Colors.white,
+                              size: 30)
+                              : Icon(
+                              _currentCameraDirection == CameraLensDirection.front ? Icons.camera_front : Icons.camera_rear,
+                              color: Colors.white,
+                              size: 30)
+                        ],
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        _take();
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.circle,
+                            color: _isVideoCameraSelected ? Colors.white : Colors.white38,
+                            size: 80,
+                          ),
+                          Icon(
+                            Icons.circle,
+                            color: _isVideoCameraSelected ? Colors.red : Colors.white,
+                            size: 65,
+                          ),
+                          _isVideoCameraSelected && _isRecordingInProgress
+                              ? Icon(
+                            Icons.stop_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          )
+                              : Container(),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      child: Text('Done', style: TextStyle(color: Colors.black)),
+                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                      onPressed: () {
+                        this.widget._listener.target?.onPictureTaken(_allFileList);
+                        Navigator.of(this.context).pop(true); // 返回前一頁
+                      },
+                    )
+                  ],
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Row(
@@ -814,11 +818,13 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   Future<bool> _onBackPressed() async {
     return await showDialog(
       context: context,
-      builder: (context) => new AlertDialog(
-        title: new Text('Confirm'),
-        content: new Text('Do you want to Exit ?'),
-        actions: <Widget>[ Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      builder: (context) =>
+        new AlertDialog(
+        title: Text('Confirm'),
+        content: Text('Do you want to Exit ?'),
+        actions: [
+            Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
             TextButton(
                 child: Text("NO", textAlign: TextAlign.center),
