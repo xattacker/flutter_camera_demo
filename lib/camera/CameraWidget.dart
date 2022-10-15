@@ -58,8 +58,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   CameraLensDirection _currentCameraDirection = CameraLensDirection.back;
   bool _isVideoCameraSelected = false;
   bool _isRecordingInProgress = false;
-  double _minAvailableExposureOffset = 0.0;
-  double _maxAvailableExposureOffset = 0.0;
+  double _minExposureOffset = 0.0;
+  double _maxExposureOffset = 0.0;
   
   double _minZoom = 1.0;
   double _maxZoom = 1.0;
@@ -317,10 +317,10 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       await Future.wait([
         cameraController
             .getMinExposureOffset()
-            .then((value) => _minAvailableExposureOffset = value),
+            .then((value) => _minExposureOffset = value),
         cameraController
             .getMaxExposureOffset()
-            .then((value) => _maxAvailableExposureOffset = value),
+            .then((value) => _maxExposureOffset = value),
         cameraController
             .getMaxZoomLevel()
             .then((value) => _maxZoom = value <= 4 ? value : 4),
@@ -386,34 +386,35 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   {
     return Column(
       children: [
-        AspectRatio(
-          aspectRatio: 1 / (_cameraCtrl?.value.aspectRatio ?? 1),
-          child: Stack(
+            AspectRatio(
+            aspectRatio: 1 / (_cameraCtrl?.value.aspectRatio ?? 1),
+            child:
+            Stack(
             children: [
-              CameraPreview(
-                _cameraCtrl!,
-                child: LayoutBuilder(builder:
-                    (BuildContext context, BoxConstraints constraints) {
-                  return GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTapDown: (details) =>
-                          onViewFinderTap(details, constraints),
-                      onScaleStart: (ScaleStartDetails e) {
-                        _tempZoom = _currentZoom;
-                      },
-                      onScaleUpdate: (ScaleUpdateDetails e) {
-                        double orig_scale = e.scale.toDouble();
-                        double scale = orig_scale * _tempZoom;
-                        scale = scale.clamp(_minZoom, _maxZoom).toDouble();
-                        //print("onScaleUpdate $scale, $orig_scale");
-                        setZoomLv(scale.toDouble());
-                      },
-                      onScaleEnd: (ScaleEndDetails e) {
-                        _tempZoom = 0;
-                      }
-                  );
-                }),
-              ),
+                      CameraPreview(
+                            _cameraCtrl!,
+                            child: LayoutBuilder(builder:
+                                (BuildContext context, BoxConstraints constraints) {
+                              return GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTapDown: (details) =>
+                                      onViewFinderTap(details, constraints),
+                                  onScaleStart: (ScaleStartDetails e) {
+                                    _tempZoom = _currentZoom;
+                                  },
+                                  onScaleUpdate: (ScaleUpdateDetails e) {
+                                    double orig_scale = e.scale.toDouble();
+                                    double scale = orig_scale * _tempZoom;
+                                    scale = scale.clamp(_minZoom, _maxZoom).toDouble();
+                                    //print("onScaleUpdate $scale, $orig_scale");
+                                    setZoomLv(scale.toDouble());
+                                  },
+                                  onScaleEnd: (ScaleEndDetails e) {
+                                    _tempZoom = 0;
+                                  }
+                              );
+                            }),
+                          ),
               IgnorePointer(
                   child: _focusScreenWidget // draw focus frame
               ),
@@ -444,8 +445,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                           height: 30,
                           child: Slider(
                             value: _currentExposureOffset,
-                            min: _minAvailableExposureOffset,
-                            max: _maxAvailableExposureOffset,
+                            min: _minExposureOffset,
+                            max: _maxExposureOffset,
                             activeColor: Colors.white,
                             inactiveColor: Colors.white30,
                             onChanged: (value) async {
@@ -491,27 +492,21 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                               Icon(
                                 Icons.circle,
                                 color: Colors.black38,
-                                size: 60,
-                              ),
+                                size: 60),
                               _isRecordingInProgress
                                   ? _cameraCtrl?.value.isRecordingPaused == true
                                   ? Icon(
                                 Icons.play_arrow,
                                 color: Colors.white,
-                                size: 30,
-                              )
+                                size: 30)
                                   : Icon(
                                 Icons.pause,
                                 color: Colors.white,
-                                size: 30,
-                              )
-                                  : Icon(
-                                _currentCameraDirection == CameraLensDirection.front
-                                    ? Icons.camera_front
-                                    : Icons.camera_rear,
+                                size: 30)
+                              : Icon(
+                                _currentCameraDirection == CameraLensDirection.front ? Icons.camera_front : Icons.camera_rear,
                                 color: Colors.white,
-                                size: 30,
-                              ),
+                                size: 30)
                             ],
                           ),
                         ),
@@ -524,20 +519,15 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                             children: [
                               Icon(
                                 Icons.circle,
-                                color: _isVideoCameraSelected
-                                    ? Colors.white
-                                    : Colors.white38,
+                                color: _isVideoCameraSelected ? Colors.white : Colors.white38,
                                 size: 80,
                               ),
                               Icon(
                                 Icons.circle,
-                                color: _isVideoCameraSelected
-                                    ? Colors.red
-                                    : Colors.white,
+                                color: _isVideoCameraSelected ? Colors.red : Colors.white,
                                 size: 65,
                               ),
-                              _isVideoCameraSelected &&
-                                  _isRecordingInProgress
+                              _isVideoCameraSelected && _isRecordingInProgress
                                   ? Icon(
                                 Icons.stop_rounded,
                                 color: Colors.white,
@@ -561,7 +551,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                 ),
               ),
             ],
-          ),
+          )
         ),
         Expanded(
           child: SingleChildScrollView(
@@ -574,29 +564,20 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                     children: [
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 8.0,
-                            right: 4.0,
-                          ),
+                          padding: const EdgeInsets.only(left: 8.0, right: 4.0),
                           child: TextButton(
                             onPressed: _isRecordingInProgress
                                 ? null
                                 : () {
                               if (_isVideoCameraSelected) {
                                 setState(() {
-                                  _isVideoCameraSelected =
-                                  false;
+                                  _isVideoCameraSelected = false;
                                 });
                               }
                             },
                             style: TextButton.styleFrom(
-                              primary: _isVideoCameraSelected
-                                  ? Colors.black54
-                                  : Colors.black,
-                              backgroundColor:
-                              _isVideoCameraSelected
-                                  ? Colors.white30
-                                  : Colors.white,
+                              primary: _isVideoCameraSelected ? Colors.black54 : Colors.black,
+                              backgroundColor: _isVideoCameraSelected ? Colors.white30 : Colors.white,
                             ),
                             child: Text('IMAGE'),
                           ),
@@ -615,14 +596,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                               }
                             },
                             style: TextButton.styleFrom(
-                              primary: _isVideoCameraSelected
-                                  ? Colors.black
-                                  : Colors.black54,
-                              backgroundColor:
-                              _isVideoCameraSelected
-                                  ? Colors.white
-                                  : Colors.white30,
-                            ),
+                              primary: _isVideoCameraSelected ? Colors.black : Colors.black54,
+                              backgroundColor: _isVideoCameraSelected ? Colors.white : Colors.white30),
                             child: Text('VIDEO'),
                           ),
                         ),
@@ -631,8 +606,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      16.0, 8.0, 16.0, 8.0),
+                  padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
                   child: Row(
                     mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
@@ -643,9 +617,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                             _currentFlashMode = FlashMode.off;
                           });
 
-                          await _cameraCtrl?.setFlashMode(
-                            FlashMode.off,
-                          );
+                          await _cameraCtrl?.setFlashMode(FlashMode.off);
                         },
                         child: Icon(
                           Icons.flash_off,
@@ -660,9 +632,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                           setState(() {
                             _currentFlashMode = FlashMode.auto;
                           });
-                          await _cameraCtrl?.setFlashMode(
-                            FlashMode.auto,
-                          );
+                          await _cameraCtrl?.setFlashMode(FlashMode.auto,);
                         },
                         child: Icon(
                           Icons.flash_auto,
@@ -681,10 +651,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                         },
                         child: Icon(
                           Icons.flash_on,
-                          color: _currentFlashMode ==
-                              FlashMode.always
-                              ? Colors.amber
-                              : Colors.white,
+                          color: _currentFlashMode == FlashMode.always ? Colors.amber : Colors.white,
                         ),
                       ),
                       InkWell(
@@ -696,10 +663,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                         },
                         child: Icon(
                           Icons.highlight,
-                          color:
-                          _currentFlashMode == FlashMode.torch
-                              ? Colors.amber
-                              : Colors.white,
+                          color: _currentFlashMode == FlashMode.torch ? Colors.amber : Colors.white,
                         ),
                       ),
                     ],
@@ -814,35 +778,36 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: WillPopScope(
-        onWillPop: _onBackPressed,
-        child:
-        Scaffold(
-            backgroundColor: Colors.black,
-            body: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  _createStatusWidget(),
-                  Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
-                          child:
-                          ElevatedButton(
-                            child: Text('Back', style: TextStyle(color: Colors.white)),
-                            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-                            onPressed: () {
-                              _onBackPressed();
-                            },
-                          ),
-                        )
-                      ]
+                child:
+                  WillPopScope(
+                  onWillPop: _onBackPressed,
+                  child:
+                  Scaffold(
+                      backgroundColor: Colors.black,
+                      body: Stack(
+                          alignment: Alignment.topCenter,
+                          children: [
+                            _createStatusWidget(),
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.fromLTRB(16.0, 8.0, 0, 0),
+                                    child:
+                                    ElevatedButton(
+                                      child: Text('Back', style: TextStyle(color: Colors.white)),
+                                      style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+                                      onPressed: () {
+                                        _onBackPressed();
+                                      },
+                                    ),
+                                  )
+                                ]
+                            )
+                          ])
                   )
-                ])
-        )
-      ),
+                ),
     );
   }
 
