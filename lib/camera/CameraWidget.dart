@@ -72,8 +72,6 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   FlashMode? _currentFlashMode;
 
   FocusScreenWidget _focusScreenWidget = FocusScreenWidget();
-
-  final resolutionPresets = ResolutionPreset.values;
   ResolutionPreset _currentResolutionPreset = ResolutionPreset.high;
 
   void updateStatus(CameraStatus status)
@@ -420,76 +418,21 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                   child: _focusScreenWidget // draw focus frame
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  16.0,
-                  8.0,
-                  16.0,
-                  8.0,
-                ),
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius:
-                          BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            left: 8.0,
-                            right: 8.0,
-                          ),
-                          child: DropdownButton<ResolutionPreset>(
-                            dropdownColor: Colors.black87,
-                            underline: Container(),
-                            value: _currentResolutionPreset,
-                            items: [
-                              for (ResolutionPreset preset
-                              in resolutionPresets)
-                                DropdownMenuItem(
-                                  child: Text(
-                                    preset
-                                        .toString()
-                                        .split('.')[1]
-                                        .toUpperCase(),
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  value: preset,
-                                )
-                            ],
-                            onChanged: (value) {
-                              _currentResolutionPreset = value!;
-                              updateStatus(CameraStatus.initialing);
-
-                              CameraDescription? desc = _cameraCtrl?.description;
-                              if (desc != null) {
-                                onNewCameraSelected(desc);
-                              }
-                            },
-                            hint: Text("Select item"),
-                          ),
-                        ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                        BorderRadius.circular(10.0),
                       ),
-                    ),
-                    // Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          right: 8.0, top: 16.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                          BorderRadius.circular(10.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            _currentExposureOffset.toStringAsFixed(1) + 'x',
-                            style: TextStyle(color: Colors.black),
-                          ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _currentExposureOffset.toStringAsFixed(1) + 'x',
+                          style: TextStyle(color: Colors.black),
                         ),
                       ),
                     ),

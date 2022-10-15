@@ -27,6 +27,8 @@ class CameraManager
 
   int get cameraCount => _cameras.length;
 
+  static const resolutionPresets = ResolutionPreset.values;
+
   // singleton pattern
   CameraManager._internal();
   factory CameraManager() => _instance;
