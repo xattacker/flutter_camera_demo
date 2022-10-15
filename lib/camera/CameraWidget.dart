@@ -159,7 +159,43 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     }
   }
 
-  Future<XFile?> takePicture() async {
+  void _take() async
+  {
+    if (_isVideoCameraSelected)
+     {
+        if (_isRecordingInProgress) {
+          XFile? rawVideo = await stopVideoRecording();
+          File videoFile = File(rawVideo!.path);
+
+          int currentUnix = DateTime.now().millisecondsSinceEpoch;
+          final directory = await getApplicationDocumentsDirectory();
+          String fileFormat = videoFile.path.split('.').last;
+
+          _videoFile = await videoFile.copy('${directory.path}/$currentUnix.$fileFormat');
+          _startVideoPlayer();
+        }
+        else
+        {
+          await startVideoRecording();
+        }
+    }
+    else
+    {
+          XFile? rawImage = await _takePicture();
+          File imageFile = File(rawImage!.path);
+
+          int currentUnix = DateTime.now().millisecondsSinceEpoch;
+
+          final directory = await getApplicationDocumentsDirectory();
+          String fileFormat = imageFile.path.split('.').last;
+          debugPrint(fileFormat);
+
+          await imageFile.copy('${directory.path}/$currentUnix.$fileFormat');
+          _refreshCapturedImages();
+    }
+  }
+
+  Future<XFile?> _takePicture() async {
     final CameraController? cameraController = _cameraCtrl;
     if (cameraController == null || cameraController.value.isTakingPicture == true) {
       // A capture is already pending, do nothing.
@@ -458,7 +494,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                       ),
                     ),
                     Expanded(
-                      child: RotatedBox(
+                      child:
+                        RotatedBox(
                         quarterTurns: 3,
                         child: Container(
                           height: 30,
@@ -536,37 +573,9 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                           ),
                         ),
                         InkWell(
-                          onTap: _isVideoCameraSelected
-                              ? () async {
-                            if (_isRecordingInProgress) {
-                              XFile? rawVideo = await stopVideoRecording();
-                              File videoFile = File(rawVideo!.path);
-
-                              int currentUnix = DateTime.now().millisecondsSinceEpoch;
-                              final directory = await getApplicationDocumentsDirectory();
-                              String fileFormat = videoFile.path.split('.').last;
-
-                              _videoFile = await videoFile.copy('${directory.path}/$currentUnix.$fileFormat');
-                              _startVideoPlayer();
-                            }
-                            else
-                            {
-                              await startVideoRecording();
-                            }
-                          }
-                              : () async {
-                            XFile? rawImage = await takePicture();
-                            File imageFile = File(rawImage!.path);
-
-                            int currentUnix = DateTime.now().millisecondsSinceEpoch;
-
-                            final directory = await getApplicationDocumentsDirectory();
-                            String fileFormat = imageFile.path.split('.').last;
-                            debugPrint(fileFormat);
-
-                            await imageFile.copy('${directory.path}/$currentUnix.$fileFormat');
-                            _refreshCapturedImages();
-                          },
+                          onTap: () {
+                            _take();
+                        },
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -595,48 +604,14 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                             ],
                           ),
                         ),
-                        InkWell(
-                          onTap: _imageFile != null || _videoFile != null
-                              ? () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PreviewScreenWidget(
-                                      imageFile: _imageFile!,
-                                      fileList: _allFileList,
-                                    ),
-                              ),
-                            );
-                          }
-                          : null,
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(10.0),
-                              border: Border.all(color: Colors.white, width: 2),
-                              image:
-                              _imageFile != null ?
-                              DecorationImage(image: FileImage(_imageFile!), fit: BoxFit.cover)
-                                  : null,
-                            ),
-                            child: _videoCtrl != null &&
-                                _videoCtrl?.value.isInitialized == true
-                                ? ClipRRect(
-                              borderRadius:
-                              BorderRadius.circular(
-                                  8.0),
-                              child: AspectRatio(
-                                aspectRatio:
-                                _videoCtrl?.value.aspectRatio ?? 1,
-                                child: VideoPlayer(
-                                    _videoCtrl!),
-                              ),
-                            )
-                                : Container(),
-                          ),
-                        ),
+                        ElevatedButton(
+                          child: Text('Done', style: TextStyle(color: Colors.black)),
+                          style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                          onPressed: () {
+                            this.widget._listener.target?.onPictureTaken(_allFileList);
+                            Navigator.of(this.context).pop(true); // 返回前一頁
+                          },
+                        )
                       ],
                     ),
                   ],
@@ -797,16 +772,14 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
   Widget _createLoadingWidget()
   {
-      return Center(
-                  child: Text('LOADING', style: TextStyle(color: Colors.white))
-                );
+      return Center(child: Text('LOADING', style: TextStyle(color: Colors.white)));
   }
 
   Widget _createPermissionDeniedWidget()
   {
     return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               Row(),
               Text(
                 'Permission denied',
@@ -837,9 +810,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
 
   Widget _createFailureWidget()
   {
-    return Center(
-        child: Text('Camera Failure', style: TextStyle(color: Colors.white))
-    );
+    return Center(child: Text('Camera Load Failure', style: TextStyle(color: Colors.white)));
   }
 
   Widget _createStatusWidget()
@@ -847,19 +818,19 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
       switch (this._status)
       {
           case CameraStatus.unstarted:
-            return _createLoadingWidget();
+             return _createLoadingWidget();
 
          case CameraStatus.permissionDenied:
-            return _createPermissionDeniedWidget();
+              return _createPermissionDeniedWidget();
 
         case CameraStatus.initialing:
-          return _createLoadingWidget();
+             return _createLoadingWidget();
 
         case CameraStatus.started:
-          return _createMainWidget();
+             return _createMainWidget();
 
         case CameraStatus.failed:
-          return _createFailureWidget();
+            return _createFailureWidget();
       }
   }
 
