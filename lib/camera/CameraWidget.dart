@@ -394,7 +394,7 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
             Center(
               child:
                 AspectRatio(
-                aspectRatio: 1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
+                aspectRatio: 1, //1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
                 child:
                         CameraPreview(
                               _cameraCtrl!,
