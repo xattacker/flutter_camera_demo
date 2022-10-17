@@ -380,6 +380,16 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     _cameraCtrl?.setZoomLevel(zoom);
   }
 
+  Widget _createCameraWidget()
+  {
+      return Center(
+                    child:
+                    AspectRatio(
+                        aspectRatio: 1, //1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
+                        child: _createCameraPreview())
+                );
+  }
+
   CameraPreview _createCameraPreview()
   {
     return CameraPreview(
@@ -408,6 +418,70 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
             );
   }
 
+  Widget _createLoadingWidget()
+  {
+    return Center(child: Text('LOADING', style: TextStyle(color: Colors.white)));
+  }
+
+  Widget _createPermissionDeniedWidget()
+  {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(),
+        Text(
+          'Permission denied',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+          ),
+        ),
+        SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: () {
+            getPermissionStatus();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Give permission',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+              ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _createFailureWidget()
+  {
+    return Center(child: Text('Camera Load Failure', style: TextStyle(color: Colors.white)));
+  }
+
+  Widget _createBodyWidget()
+  {
+    switch (this._status)
+    {
+      case CameraStatus.unstarted:
+        return _createLoadingWidget();
+
+      case CameraStatus.permissionDenied:
+        return _createPermissionDeniedWidget();
+
+      case CameraStatus.initialing:
+        return _createLoadingWidget();
+
+      case CameraStatus.started:
+        return _createCameraWidget();
+
+      case CameraStatus.failed:
+        return _createFailureWidget();
+    }
+  }
+
   Widget _createMainWidget()
   {
     return Column(
@@ -419,13 +493,8 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                   Container(
                     color: Colors.red,
                   ),
-                Center(
-                  child:
-                        AspectRatio(
-                        aspectRatio: 1, //1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
-                        child: _createCameraPreview())
-                   ),
-                    IgnorePointer(
+                  _createBodyWidget(),
+                   IgnorePointer(
                         child: _focusScreenWidget // draw focus frame
                     ),
                     Padding(
@@ -686,68 +755,9 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     );
   }
 
-  Widget _createLoadingWidget()
-  {
-      return Center(child: Text('LOADING', style: TextStyle(color: Colors.white)));
-  }
-
-  Widget _createPermissionDeniedWidget()
-  {
-    return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-              Row(),
-              Text(
-                'Permission denied',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-              SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  getPermissionStatus();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Give permission',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
-                  ),
-                ),
-              )
-            ],
-          );
-  }
-
-  Widget _createFailureWidget()
-  {
-    return Center(child: Text('Camera Load Failure', style: TextStyle(color: Colors.white)));
-  }
-
   Widget _createStatusWidget()
   {
-      switch (this._status)
-      {
-          case CameraStatus.unstarted:
-             return _createLoadingWidget();
-
-         case CameraStatus.permissionDenied:
-              return _createPermissionDeniedWidget();
-
-        case CameraStatus.initialing:
-             return _createLoadingWidget();
-
-        case CameraStatus.started:
-             return _createMainWidget();
-
-        case CameraStatus.failed:
-            return _createFailureWidget();
-      }
+      return _createMainWidget();
   }
 
   @override
