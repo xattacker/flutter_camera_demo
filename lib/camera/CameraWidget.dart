@@ -380,6 +380,34 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     _cameraCtrl?.setZoomLevel(zoom);
   }
 
+  CameraPreview _createCameraPreview()
+  {
+    return CameraPreview(
+              _cameraCtrl!,
+              child: LayoutBuilder(builder:
+                  (BuildContext context, BoxConstraints constraints) {
+                return GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (details) =>
+                        onViewFinderTap(details, constraints),
+                    onScaleStart: (ScaleStartDetails e) {
+                      _tempZoom = _currentZoom;
+                    },
+                    onScaleUpdate: (ScaleUpdateDetails e) {
+                      double orig_scale = e.scale.toDouble();
+                      double scale = orig_scale * _tempZoom;
+                      scale = scale.clamp(_minZoom, _maxZoom).toDouble();
+                      //print("onScaleUpdate $scale, $orig_scale");
+                      setZoomLv(scale.toDouble());
+                    },
+                    onScaleEnd: (ScaleEndDetails e) {
+                      _tempZoom = 0;
+                    }
+                );
+              }),
+            );
+  }
+
   Widget _createMainWidget()
   {
     return Column(
@@ -388,39 +416,14 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
     child:
             Stack(
             children: [
-              Container(
-                color: Colors.red,
-              ),
-            Center(
-              child:
-                AspectRatio(
-                aspectRatio: 1, //1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
-                child:
-                        CameraPreview(
-                              _cameraCtrl!,
-                              child: LayoutBuilder(builder:
-                                  (BuildContext context, BoxConstraints constraints) {
-                                return GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    onTapDown: (details) =>
-                                        onViewFinderTap(details, constraints),
-                                    onScaleStart: (ScaleStartDetails e) {
-                                      _tempZoom = _currentZoom;
-                                    },
-                                    onScaleUpdate: (ScaleUpdateDetails e) {
-                                      double orig_scale = e.scale.toDouble();
-                                      double scale = orig_scale * _tempZoom;
-                                      scale = scale.clamp(_minZoom, _maxZoom).toDouble();
-                                      //print("onScaleUpdate $scale, $orig_scale");
-                                      setZoomLv(scale.toDouble());
-                                    },
-                                    onScaleEnd: (ScaleEndDetails e) {
-                                      _tempZoom = 0;
-                                    }
-                                );
-                              }),
-                            )
-                        )
+                  Container(
+                    color: Colors.red,
+                  ),
+                Center(
+                  child:
+                        AspectRatio(
+                        aspectRatio: 1, //1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
+                        child: _createCameraPreview())
                    ),
                     IgnorePointer(
                         child: _focusScreenWidget // draw focus frame
