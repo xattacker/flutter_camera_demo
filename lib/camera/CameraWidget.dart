@@ -1,11 +1,9 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_camera_demo/util/Extension.dart';
-import 'package:flutter_camera_demo/camera/PreviewScreenWidget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
@@ -386,94 +384,94 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
   {
     return Column(
       children: [
+    Expanded(
+    child:
             AspectRatio(
             aspectRatio: 1 /  (_cameraCtrl?.value.aspectRatio ?? 1),
             child:
             Stack(
             children: [
-                      CameraPreview(
-                            _cameraCtrl!,
-                            child: LayoutBuilder(builder:
-                                (BuildContext context, BoxConstraints constraints) {
-                              return GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTapDown: (details) =>
-                                      onViewFinderTap(details, constraints),
-                                  onScaleStart: (ScaleStartDetails e) {
-                                    _tempZoom = _currentZoom;
-                                  },
-                                  onScaleUpdate: (ScaleUpdateDetails e) {
-                                    double orig_scale = e.scale.toDouble();
-                                    double scale = orig_scale * _tempZoom;
-                                    scale = scale.clamp(_minZoom, _maxZoom).toDouble();
-                                    //print("onScaleUpdate $scale, $orig_scale");
-                                    setZoomLv(scale.toDouble());
-                                  },
-                                  onScaleEnd: (ScaleEndDetails e) {
-                                    _tempZoom = 0;
-                                  }
-                              );
-                            }),
-                          ),
-              IgnorePointer(
-                  child: _focusScreenWidget // draw focus frame
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                child:
-                    Row(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                    _currentExposureOffset.toStringAsFixed(1) + 'x',
-                                    style: TextStyle(color: Colors.black)),
-                              ),
-                            ),
-                            Expanded(
-                              child:
-                              RotatedBox(
-                                quarterTurns: 3,
-                                child: Container(
-                                  height: 30,
-                                  child: Slider(
-                                    value: _currentExposureOffset,
-                                    min: _minExposureOffset,
-                                    max: _maxExposureOffset,
-                                    activeColor: Colors.white,
-                                    inactiveColor: Colors.white30,
-                                    onChanged: (value) async {
-                                      setState(() {
-                                        _currentExposureOffset = value;
-                                      });
-                                      await _cameraCtrl?.setExposureOffset(value);
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                    CameraPreview(
+                          _cameraCtrl!,
+                          child: LayoutBuilder(builder:
+                              (BuildContext context, BoxConstraints constraints) {
+                            return GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTapDown: (details) =>
+                                    onViewFinderTap(details, constraints),
+                                onScaleStart: (ScaleStartDetails e) {
+                                  _tempZoom = _currentZoom;
+                                },
+                                onScaleUpdate: (ScaleUpdateDetails e) {
+                                  double orig_scale = e.scale.toDouble();
+                                  double scale = orig_scale * _tempZoom;
+                                  scale = scale.clamp(_minZoom, _maxZoom).toDouble();
+                                  //print("onScaleUpdate $scale, $orig_scale");
+                                  setZoomLv(scale.toDouble());
+                                },
+                                onScaleEnd: (ScaleEndDetails e) {
+                                  _tempZoom = 0;
+                                }
+                            );
+                          }),
                         ),
-                      ])
-              ),
+                    IgnorePointer(
+                        child: _focusScreenWidget // draw focus frame
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
+                      child:
+                          Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                          _currentExposureOffset.toStringAsFixed(1) + 'x',
+                                          style: TextStyle(color: Colors.black)),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child:
+                                    RotatedBox(
+                                      quarterTurns: 3,
+                                      child: Container(
+                                        height: 30,
+                                        child: Slider(
+                                          value: _currentExposureOffset,
+                                          min: _minExposureOffset,
+                                          max: _maxExposureOffset,
+                                          activeColor: Colors.white,
+                                          inactiveColor: Colors.white30,
+                                          onChanged: (value) async {
+                                            setState(() {
+                                              _currentExposureOffset = value;
+                                            });
+                                            await _cameraCtrl?.setExposureOffset(value);
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ])
+                    ),
             ],
           )
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
+        )
+      ),
+      Column(
               children: [
                 _photoBarWidget,
                 Row(
@@ -675,8 +673,6 @@ class _CameraWidgetState extends State<CameraWidget> with WidgetsBindingObserver
                 )
               ],
             ),
-          ),
-        ),
       ],
     );
   }
